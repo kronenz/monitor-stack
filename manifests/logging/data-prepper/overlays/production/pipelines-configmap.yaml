@@ -1,0 +1,76 @@
+# Data Prepper Pipeline 설정
+# Fluent Bit HTTP 입력 → 처리 → OpenSearch 출력
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-prepper-pipelines
+  namespace: logging
+data:
+  pipelines.yaml: |
+    # ==========================================================================
+    # K8s Container Logs Pipeline
+    # Fluent Bit에서 전송된 쿠버네티스 컨테이너 로그 처리
+    # ==========================================================================
+    kubernetes-logs-pipeline:
+      workers: 2
+      delay: 100
+      
+      source:
+        http:
+          port: 2021
+          path: "/log/k8s"
+          health_check_service: true
+      
+      processor:
+        - date:
+            from_time_received: true
+            destination: "@timestamp"
+        
+        - add_entries:
+            entries:
+              - key: pipeline
+                value: kubernetes
+      
+      sink:
+        - opensearch:
+            hosts: ["http://opensearch.logging.svc.cluster.local:9200"]
+            index: "k8s-logs-%{+yyyy.MM.dd}"
+            bulk_size: 4
+    
+    # ==========================================================================
+    # Java Application Logs Pipeline
+    # 호스트패스에서 수집된 Java 애플리케이션 로그 처리
+    # ==========================================================================
+    java-logs-pipeline:
+      workers: 2
+      delay: 100
+      
+      source:
+        http:
+          port: 2021
+          path: "/log/java"
+          health_check_service: true
+      
+      processor:
+        - date:
+            from_time_received: true
+            destination: "@timestamp"
+        
+        - grok:
+            match:
+              message:
+                # Java 로그 패턴: timestamp level logger - message
+                - "%{TIMESTAMP_ISO8601:log_timestamp} %{LOGLEVEL:level}%{SPACE}+%{NOTSPACE:logger} - %{GREEDYDATA:log_message}"
+                # 대체 패턴: level timestamp logger message
+                - "%{LOGLEVEL:level}%{SPACE}+%{TIMESTAMP_ISO8601:log_timestamp}%{SPACE}+%{NOTSPACE:logger}%{SPACE}+---%{SPACE}+%{GREEDYDATA:log_message}"
+        
+        - add_entries:
+            entries:
+              - key: pipeline
+                value: java-application
+      
+      sink:
+        - opensearch:
+            hosts: ["http://opensearch.logging.svc.cluster.local:9200"]
+            index: "java-logs-%{+yyyy.MM.dd}"
+            bulk_size: 4

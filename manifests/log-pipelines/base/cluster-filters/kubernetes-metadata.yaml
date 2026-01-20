@@ -1,0 +1,30 @@
+# ClusterFilter: Kubernetes 메타데이터 추가
+# 컨테이너 로그에 Pod, Namespace, Labels 등 메타데이터 추가
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: kubernetes-metadata
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: filter
+spec:
+  # kube.* 태그에만 적용
+  match: kube.*
+  filters:
+    - kubernetes:
+        # Kubernetes API 서버 URL (클러스터 내부)
+        kubeURL: https://kubernetes.default.svc:443
+        # TLS 인증서 검증
+        kubeCAFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        kubeTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+        # Labels 및 Annotations 포함
+        labels: true
+        annotations: false
+        # 메타데이터 캐시 설정
+        kubeMetaCacheSize: 5000
+        kubeMetaTTL: 300s
+        # Pod 정보에서 namespace, pod_name 추출
+        mergeLog: true
+        keepLog: false
+        # 태그에서 정보 추출을 위한 정규식
+        kubeTagPrefix: kube.var.log.containers.

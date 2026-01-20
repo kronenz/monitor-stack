@@ -1,0 +1,35 @@
+# ClusterInput: 호스트패스 Java 애플리케이션 로그 수집
+# /var/log/{namespace}/{app}-{service}-{jobid}-YYYY-MM-dd.log 패턴의 로그 tail
+# 사용자 애플리케이션이 이 경로에 로그를 쓰면 자동 수집
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterInput
+metadata:
+  name: hostpath-java-logs
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: input
+spec:
+  tail:
+    # 호스트패스 로그 경로 패턴
+    # 디렉토리 구조: /var/log/{namespace}/{app}-{service}-{jobid}-YYYY-MM-dd.log
+    path: /var/log/*/*.log
+    # 제외 경로 (시스템 로그 제외)
+    excludePath: /var/log/containers/*,/var/log/pods/*,/var/log/*.log
+    # 태그 형식: java.<파일경로>
+    tag: java.*
+    # Java 멀티라인 파서 사용 (스택트레이스 처리)
+    parser: java-multiline
+    # 파일 경로를 레코드에 포함 (메타데이터 추출용)
+    pathKey: filepath
+    # 새 파일 감지 간격 (초)
+    refreshIntervalSeconds: 10
+    # 메모리 버퍼 제한
+    memBufLimit: 5MB
+    # 긴 라인 스킵
+    skipLongLines: true
+    # DB 파일 (오프셋 추적)
+    db: /fluent-bit/tail/java-logs.db
+    # DB 동기화 모드
+    dbSync: Normal
+    # 멀티라인 플러시 간격 (ms)
+    multilineFlushSeconds: 2

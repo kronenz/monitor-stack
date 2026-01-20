@@ -1,0 +1,15 @@
+# OpenSearch Operator Helm Chart Values
+# Chart Version: 2.8.0
+# Operator만 설치하고, 실제 OpenSearch 클러스터는 CR로 배포
+
+manager:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Operator 로깅 레벨
+logLevel: info

@@ -1,0 +1,35 @@
+# ArgoCD Installation Kustomization
+# 공식 ArgoCD 매니페스트를 원격에서 가져와 설치
+# 참고: https://argo-cd.readthedocs.io/en/stable/getting_started/
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: argocd
+
+resources:
+  - namespace.yaml
+  # ArgoCD 공식 설치 매니페스트 (stable 버전)
+  - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# ArgoCD Server를 NodePort로 노출 (실험 환경용)
+patches:
+  - patch: |
+      - op: replace
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30080
+      - op: add
+        path: /spec/ports/1/nodePort
+        value: 30443
+    target:
+      kind: Service
+      name: argocd-server
+
+# ConfigMap 패치 (Kustomize Helm 지원 활성화)
+configMapGenerator:
+  - name: argocd-cm
+    behavior: merge
+    literals:
+      - kustomize.buildOptions=--enable-helm

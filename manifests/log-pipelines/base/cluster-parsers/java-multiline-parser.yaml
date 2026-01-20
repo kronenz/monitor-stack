@@ -1,0 +1,31 @@
+# ClusterParser: Java 멀티라인 파서
+# Java 스택트레이스를 단일 로그 이벤트로 병합
+# 타임스탬프로 시작하지 않는 라인은 이전 라인에 병합
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterParser
+metadata:
+  name: java-multiline
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: parser
+spec:
+  # Java 표준 로그 형식 파싱
+  # 형식: YYYY-MM-dd HH:mm:ss.SSS LEVEL logger - message
+  # 예: 2024-01-15 10:30:00.123 INFO  c.e.MyClass - Starting application
+  regex:
+    regex: "^(?<time>\\d{4}-\\d{2}-\\d{2}[T ]\\d{2}:\\d{2}:\\d{2}[.,]\\d{3})\\s+(?<level>\\w+)\\s+(?<logger>[^\\s]+)\\s+-\\s+(?<message>.*)$"
+    timeKey: time
+    timeFormat: "%Y-%m-%d %H:%M:%S.%L"
+  # 멀티라인 처리 (스택트레이스)
+  # 타임스탬프로 시작하지 않는 라인은 이전 메시지에 병합
+  multilineParser:
+    type: regex
+    # 새 로그 시작 패턴: 타임스탬프로 시작
+    flushTimeout: 2000
+    rules:
+      - state: start_state
+        regex: "^\\d{4}-\\d{2}-\\d{2}"
+        next: cont
+      - state: cont
+        regex: "^(?!\\d{4}-\\d{2}-\\d{2}).*"
+        next: cont

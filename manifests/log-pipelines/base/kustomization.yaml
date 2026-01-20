@@ -1,0 +1,17 @@
+# Fluent-bit CRD 기반 로그 파이프라인
+# 모든 Input, Parser, Filter, Output은 Fluent Operator CRD 사용
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: logging
+
+resources:
+  - fluentbit-config.yaml
+  - cluster-inputs/kubernetes-logs.yaml
+  - cluster-inputs/hostpath-java-logs.yaml
+  - cluster-parsers/cri-parser.yaml
+  - cluster-parsers/java-multiline-parser.yaml
+  - cluster-filters/kubernetes-metadata.yaml
+  - cluster-filters/modify-records.yaml
+  - cluster-outputs/data-prepper-k8s.yaml
+  - cluster-outputs/data-prepper-java.yaml

@@ -1,0 +1,34 @@
+# ArgoCD App of Apps 패턴
+# 모든 애플리케이션을 단일 Application으로 관리
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitor-stack
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  
+  source:
+    repoURL: https://github.com/kronenz/monitor-stack.git
+    targetRevision: main
+    path: argocd/applications
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m

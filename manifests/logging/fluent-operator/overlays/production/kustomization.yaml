@@ -1,0 +1,18 @@
+# Fluent Operator 배포
+# Fluent Bit를 Kubernetes 네이티브 방식(CRD)으로 관리
+# Fluent Bit DaemonSet 및 CRD 컨트롤러 설치
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: logging
+
+resources:
+  - ../../base
+
+helmCharts:
+  - name: fluent-operator
+    repo: https://fluent.github.io/helm-charts
+    version: "3.5.0"
+    releaseName: fluent-operator
+    namespace: logging
+    valuesFile: values.yaml

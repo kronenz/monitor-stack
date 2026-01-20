@@ -1,0 +1,45 @@
+# Data Prepper Helm Chart Values
+# Chart Version: 0.3.1
+# Fluent Bit → Data Prepper → OpenSearch 파이프라인
+
+replicaCount: 1
+
+image:
+  repository: opensearchproject/data-prepper
+  tag: "2.10.0"
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 1Gi
+  requests:
+    cpu: 200m
+    memory: 512Mi
+
+# 서비스 설정 (Fluent Bit가 HTTP로 전송)
+service:
+  type: ClusterIP
+  port: 2021
+
+# 파이프라인 설정은 ConfigMap으로 마운트
+config:
+  # 기본 설정 (pipelines.yaml은 ConfigMap에서 제공)
+  data-prepper-config.yaml: |
+    ssl: false
+    peer_forwarder:
+      ssl: false
+
+# 파이프라인 ConfigMap 사용
+pipelineConfig:
+  enabled: false
+
+# 추가 볼륨 (pipelines ConfigMap 마운트)
+extraVolumes:
+  - name: pipelines-config
+    configMap:
+      name: data-prepper-pipelines
+
+extraVolumeMounts:
+  - name: pipelines-config
+    mountPath: /usr/share/data-prepper/pipelines/pipelines.yaml
+    subPath: pipelines.yaml

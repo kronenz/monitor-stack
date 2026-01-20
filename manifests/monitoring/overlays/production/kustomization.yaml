@@ -1,0 +1,18 @@
+# kube-prometheus-stack Kustomize + Helm 배포
+# Helm 차트를 Kustomize helmCharts 기능으로 렌더링하여 배포
+# 참고: ArgoCD에서 --enable-helm 옵션 필요
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: monitoring
+
+resources:
+  - ../../base
+
+helmCharts:
+  - name: kube-prometheus-stack
+    repo: https://prometheus-community.github.io/helm-charts
+    version: "81.0.1"
+    releaseName: monitoring
+    namespace: monitoring
+    valuesFile: values.yaml

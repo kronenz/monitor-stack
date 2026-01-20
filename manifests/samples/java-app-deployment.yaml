@@ -1,0 +1,83 @@
+# 샘플 Java Application Deployment
+# HostPath 로그 수집을 위한 예제 배포 구성
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sample-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-java-app
+  namespace: sample-app
+  labels:
+    app: sample-java-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-java-app
+  template:
+    metadata:
+      labels:
+        app: sample-java-app
+    spec:
+      containers:
+        - name: app
+          # 테스트용: busybox로 로그 파일 생성
+          image: busybox:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              # 로그 디렉토리 생성
+              mkdir -p /var/log/app
+              
+              # 무한 루프로 로그 생성
+              while true; do
+                DATE=$(date +%Y-%m-%d)
+                TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S.000')
+                
+                # INFO 로그
+                echo "$TIMESTAMP INFO  c.e.SampleService - Processing request" >> /var/log/app/sample-api-${POD_NAME}-${DATE}.log
+                sleep 5
+                
+                # DEBUG 로그
+                echo "$TIMESTAMP DEBUG c.e.SampleService - Request details: id=123" >> /var/log/app/sample-api-${POD_NAME}-${DATE}.log
+                sleep 5
+                
+                # ERROR 로그 (스택트레이스 포함)
+                if [ $((RANDOM % 10)) -eq 0 ]; then
+                  echo "$TIMESTAMP ERROR c.e.SampleService - Connection failed" >> /var/log/app/sample-api-${POD_NAME}-${DATE}.log
+                  echo "java.net.ConnectException: Connection refused" >> /var/log/app/sample-api-${POD_NAME}-${DATE}.log
+                  echo "    at java.net.Socket.connect(Socket.java:591)" >> /var/log/app/sample-api-${POD_NAME}-${DATE}.log
+                  echo "    at com.example.SampleService.connect(SampleService.java:42)" >> /var/log/app/sample-api-${POD_NAME}-${DATE}.log
+                fi
+                
+                sleep 5
+              done
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - name: app-logs
+              mountPath: /var/log/app
+          resources:
+            limits:
+              cpu: 50m
+              memory: 64Mi
+            requests:
+              cpu: 10m
+              memory: 32Mi
+      volumes:
+        - name: app-logs
+          hostPath:
+            # sample-app 네임스페이스의 로그 디렉토리
+            path: /var/log/sample-app
+            type: DirectoryOrCreate

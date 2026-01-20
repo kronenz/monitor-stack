@@ -1,0 +1,19 @@
+# Data Prepper 배포
+# Fluent Bit에서 HTTP로 로그를 수신하여 OpenSearch로 전달
+# 로그 파싱, 변환, 필터링 수행
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: logging
+
+resources:
+  - ../../base
+  - pipelines-configmap.yaml
+
+helmCharts:
+  - name: data-prepper
+    repo: https://opensearch-project.github.io/helm-charts
+    version: "0.3.1"
+    releaseName: data-prepper
+    namespace: logging
+    valuesFile: values.yaml

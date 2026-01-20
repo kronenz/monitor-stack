@@ -1,0 +1,27 @@
+# ClusterInput: Kubernetes 컨테이너 로그 수집
+# /var/log/containers/*.log 경로의 컨테이너 로그 tail
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterInput
+metadata:
+  name: kubernetes-containers
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: input
+spec:
+  tail:
+    # 컨테이너 로그 경로
+    path: /var/log/containers/*.log
+    # 태그 형식: kube.<namespace>.<pod>.<container>
+    tag: kube.*
+    # CRI 파서 사용 (containerd/CRI-O)
+    parser: cri
+    # 새 파일 감지 간격 (초)
+    refreshIntervalSeconds: 10
+    # 메모리 버퍼 제한
+    memBufLimit: 5MB
+    # 시작 시 파일 끝부터 읽기
+    skipLongLines: true
+    # DB 파일 (오프셋 추적)
+    db: /fluent-bit/tail/containers.db
+    # DB 동기화 모드
+    dbSync: Normal

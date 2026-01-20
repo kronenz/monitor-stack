@@ -1,0 +1,16 @@
+# ArgoCD ConfigMap Patch
+# Kustomize에서 Helm 지원 활성화 및 기타 설정
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+data:
+  # Kustomize에서 Helm 차트 사용 활성화
+  kustomize.buildOptions: --enable-helm
+  
+  # 리소스 추적 방식 설정 (annotation 방식 사용)
+  application.resourceTrackingMethod: annotation
+  
+  # 타임아웃 설정 (대규모 Helm 차트 배포 시 필요)
+  timeout.reconciliation: 180s

@@ -1,0 +1,191 @@
+# kube-prometheus-stack Helm Chart Values
+# 원본 차트 values.yaml 구조를 유지하면서 필요한 부분만 수정
+# Chart Version: 81.0.1
+# 참고: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+
+# =============================================================================
+# 전역 설정
+# =============================================================================
+fullnameOverride: "monitoring"
+
+# =============================================================================
+# Prometheus Operator 설정
+# =============================================================================
+prometheusOperator:
+  enabled: true
+  
+  # 리소스 제한 (단일 노드 실험 환경용)
+  resources:
+    limits:
+      cpu: 200m
+      memory: 200Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+
+# =============================================================================
+# Prometheus 설정
+# =============================================================================
+prometheus:
+  enabled: true
+  
+  prometheusSpec:
+    # 스크래핑 간격 설정
+    scrapeInterval: 30s
+    evaluationInterval: 30s
+    
+    # 데이터 보관 기간 (실험 환경: 7일)
+    retention: 7d
+    
+    # 스토리지 설정 (Longhorn PVC 사용)
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+    
+    # 리소스 제한 (단일 노드용)
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+    
+    # 모든 네임스페이스의 ServiceMonitor/PodMonitor 수집
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+
+# =============================================================================
+# Alertmanager 설정
+# =============================================================================
+alertmanager:
+  enabled: true
+  
+  alertmanagerSpec:
+    # 스토리지 설정 (Longhorn PVC 사용)
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 2Gi
+    
+    # 리소스 제한
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+
+# =============================================================================
+# Grafana 설정
+# =============================================================================
+grafana:
+  enabled: true
+  
+  # 관리자 계정 (실험 환경용 - 프로덕션에서는 Secret으로 관리)
+  adminUser: admin
+  adminPassword: admin123!
+  
+  # NodePort로 노출 (실험 환경용)
+  service:
+    type: NodePort
+    nodePort: 30300
+  
+  # 스토리지 설정 (대시보드 영속성)
+  persistence:
+    enabled: true
+    storageClassName: longhorn
+    size: 5Gi
+  
+  # 리소스 제한
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  
+  # 기본 대시보드 프로바이더 설정
+  sidecar:
+    dashboards:
+      enabled: true
+      searchNamespace: ALL
+    datasources:
+      enabled: true
+
+# =============================================================================
+# Node Exporter 설정
+# =============================================================================
+nodeExporter:
+  enabled: true
+  
+  resources:
+    limits:
+      cpu: 100m
+      memory: 64Mi
+    requests:
+      cpu: 50m
+      memory: 32Mi
+
+# =============================================================================
+# Kube-state-metrics 설정
+# =============================================================================
+kubeStateMetrics:
+  enabled: true
+
+# =============================================================================
+# 추가 스크래핑 대상 (커스텀 애플리케이션용)
+# =============================================================================
+additionalScrapeConfigs: []
+
+# =============================================================================
+# 기본 알림 규칙 (활성화)
+# =============================================================================
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    etcd: false  # 단일 노드에서는 비활성화
+    configReloaders: true
+    general: true
+    k8sContainerCpuUsageSecondsTotal: true
+    k8sContainerMemoryCache: true
+    k8sContainerMemoryRss: true
+    k8sContainerMemorySwap: true
+    k8sContainerResource: true
+    k8sPodOwner: true
+    kubeApiserverAvailability: true
+    kubeApiserverBurnrate: true
+    kubeApiserverHistogram: true
+    kubeApiserverSlos: true
+    kubeControllerManager: false  # 접근 불가할 수 있음
+    kubelet: true
+    kubeProxy: false  # 접근 불가할 수 있음
+    kubePrometheusGeneral: true
+    kubePrometheusNodeRecording: true
+    kubernetesApps: true
+    kubernetesResources: true
+    kubernetesStorage: true
+    kubernetesSystem: true
+    kubeSchedulerAlerting: false  # 접근 불가할 수 있음
+    kubeSchedulerRecording: false
+    kubeStateMetrics: true
+    network: true
+    node: true
+    nodeExporterAlerting: true
+    nodeExporterRecording: true
+    prometheus: true
+    prometheusOperator: true
+    windows: false

@@ -1,0 +1,16 @@
+# ClusterParser: CRI 로그 파서
+# containerd/CRI-O 런타임의 로그 형식 파싱
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterParser
+metadata:
+  name: cri
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: parser
+spec:
+  # CRI 로그 형식: timestamp stream flags message
+  # 예: 2024-01-15T10:30:00.123456789Z stdout F Hello World
+  regex:
+    regex: "^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$"
+    timeKey: time
+    timeFormat: "%Y-%m-%dT%H:%M:%S.%L%z"

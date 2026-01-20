@@ -1,0 +1,27 @@
+# ClusterOutput: K8s 로그를 Data Prepper로 전송
+# HTTP POST로 Data Prepper의 /log/k8s 엔드포인트로 전송
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterOutput
+metadata:
+  name: data-prepper-k8s
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: output
+spec:
+  # kube.* 태그 매칭
+  match: kube.*
+  http:
+    # Data Prepper 서비스 주소
+    host: data-prepper.logging.svc.cluster.local
+    port: 2021
+    # K8s 로그 전용 엔드포인트
+    uri: /log/k8s
+    # JSON 형식으로 전송
+    format: json
+    # TLS 비활성화 (클러스터 내부 통신)
+    tls:
+      verify: false
+    # 재시도 설정
+    networking:
+      connectTimeout: 10
+      keepaliveIdleTimeout: 30

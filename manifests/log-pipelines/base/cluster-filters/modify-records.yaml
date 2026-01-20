@@ -1,0 +1,41 @@
+# ClusterFilter: Java 로그 메타데이터 추출
+# 파일 경로에서 namespace, app, service 정보 추출
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: java-log-metadata
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: filter
+spec:
+  # java.* 태그에만 적용
+  match: java.*
+  filters:
+    # Lua 스크립트로 filepath에서 메타데이터 추출
+    # /var/log/{namespace}/{app}-{service}-{jobid}-YYYY-MM-dd.log
+    - lua:
+        script:
+          key: metadata_extraction.lua
+          value: |
+            function extract_metadata(tag, timestamp, record)
+              local filepath = record["filepath"]
+              if filepath then
+                -- 경로에서 namespace 추출: /var/log/{namespace}/...
+                local namespace = string.match(filepath, "/var/log/([^/]+)/")
+                if namespace then
+                  record["namespace"] = namespace
+                end
+                
+                -- 파일명에서 app, service, jobid 추출
+                local filename = string.match(filepath, "/([^/]+)%.log$")
+                if filename then
+                  -- {app}-{service}-{jobid}-YYYY-MM-dd 패턴
+                  local app, service, jobid = string.match(filename, "^([^-]+)-([^-]+)-([^-]+)-")
+                  if app then record["app"] = app end
+                  if service then record["service"] = service end
+                  if jobid then record["jobid"] = jobid end
+                end
+              end
+              return 1, timestamp, record
+            end
+        call: extract_metadata
