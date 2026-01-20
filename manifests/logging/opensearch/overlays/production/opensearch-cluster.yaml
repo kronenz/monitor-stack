@@ -12,6 +12,12 @@ spec:
     httpPort: 9200
     pluginsList: []
   
+  # 보안 설정 (초기 관리자 비밀번호)
+  security:
+    config:
+      adminCredentialsSecret:
+        name: opensearch-admin-credentials
+  
   # 대시보드 설정
   dashboards:
     enable: true
@@ -43,3 +49,14 @@ spec:
           cpu: 500m
           memory: 1Gi
       jvm: -Xms1g -Xmx1g
+---
+# OpenSearch 관리자 자격 증명 Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: opensearch-admin-credentials
+  namespace: logging
+type: Opaque
+stringData:
+  username: admin
+  password: Admin123!
