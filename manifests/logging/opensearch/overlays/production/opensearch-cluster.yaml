@@ -49,6 +49,9 @@ spec:
           cpu: 500m
           memory: 1Gi
       jvm: -Xms1g -Xmx1g
+      env:
+        - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
+          value: Admin123!
 ---
 # OpenSearch 관리자 자격 증명 Secret
 apiVersion: v1
