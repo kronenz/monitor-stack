@@ -5,11 +5,18 @@ metadata:
   name: opensearch
   namespace: logging
 spec:
+  bootstrap:
+    # 단일 노드 클러스터에서는 부트스트랩을 비활성화
+    additionalConfig:
+      discovery.type: single-node
   general:
     serviceName: opensearch
     version: 2.11.1
     httpPort: 9200
     pluginsList: []
+    additionalConfig:
+      # 단일 노드 모드 설정
+      discovery.type: single-node
   
   # 보안 설정 (초기 관리자 비밀번호)
   security:
@@ -35,7 +42,7 @@ spec:
     - component: all-in-one
       replicas: 1
       roles:
-        - master
+        - cluster_manager
         - data
         - ingest
       persistence:
@@ -48,6 +55,8 @@ spec:
           cpu: 500m
           memory: 1Gi
       jvm: -Xms1g -Xmx1g
+      additionalConfig:
+        discovery.type: single-node
 ---
 # OpenSearch 관리자 자격 증명 Secret
 apiVersion: v1

@@ -13,7 +13,7 @@ spec:
   http:
     # Data Prepper 서비스 주소
     host: data-prepper.logging.svc.cluster.local
-    port: 2021
+    port: 2022
     # Java 로그 전용 엔드포인트
     uri: /log/java
     # JSON 형식으로 전송
