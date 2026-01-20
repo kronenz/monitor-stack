@@ -10,17 +10,6 @@ spec:
     serviceName: opensearch
     version: 2.17.0
     httpPort: 9200
-    
-    # 보안 설정 (실험 환경: 비활성화)
-    # 프로덕션에서는 반드시 활성화할 것
-    security:
-      tls:
-        http:
-          generate: false
-        transport:
-          generate: false
-    
-    # 플러그인 설정
     pluginsList: []
   
   # 대시보드 설정
@@ -28,12 +17,6 @@ spec:
     enable: true
     version: 2.17.0
     replicas: 1
-    
-    # NodePort로 노출 (실험 환경용)
-    service:
-      type: NodePort
-      nodePort: 30601
-    
     resources:
       limits:
         cpu: 500m
@@ -46,25 +29,12 @@ spec:
   nodePools:
     - component: all-in-one
       replicas: 1
-      
-      # 모든 역할 부여 (단일 노드)
       roles:
         - master
         - data
         - ingest
-      
-      # 스토리지 설정 (Longhorn PVC)
       persistence:
         emptyDir: {}
-        # 실험 환경에서는 emptyDir 사용
-        # 프로덕션에서는 아래 설정 사용:
-        # pvc:
-        #   storageClassName: longhorn
-        #   accessModes:
-        #     - ReadWriteOnce
-        #   storage: 20Gi
-      
-      # 리소스 제한 (단일 노드 실험 환경)
       resources:
         limits:
           cpu: 1000m
@@ -72,6 +42,4 @@ spec:
         requests:
           cpu: 500m
           memory: 1Gi
-      
-      # JVM 힙 설정 (메모리의 50%)
       jvm: -Xms1g -Xmx1g
