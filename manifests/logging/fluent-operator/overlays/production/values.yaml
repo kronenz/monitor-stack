@@ -18,8 +18,9 @@ fluentbit:
   
   # 이미지 설정
   image:
-    repository: fluent/fluent-bit
-    tag: "3.2.2"
+    registry: ghcr.io
+    repository: fluent/fluent-operator/fluent-bit
+    tag: "4.1.1"
   
   # 리소스 제한 (각 노드에서 실행)
   resources:
