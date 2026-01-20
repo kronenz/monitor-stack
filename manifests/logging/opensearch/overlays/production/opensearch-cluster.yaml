@@ -1,5 +1,4 @@
 # OpenSearch Cluster CR (단일 노드 실험 환경용)
-# opensearch-operator가 이 CR을 감지하여 OpenSearch 클러스터 생성
 apiVersion: opensearch.opster.io/v1
 kind: OpenSearchCluster
 metadata:
@@ -8,7 +7,7 @@ metadata:
 spec:
   general:
     serviceName: opensearch
-    version: 2.17.0
+    version: 2.11.1
     httpPort: 9200
     pluginsList: []
   
@@ -21,7 +20,7 @@ spec:
   # 대시보드 설정
   dashboards:
     enable: true
-    version: 2.17.0
+    version: 2.11.1
     replicas: 1
     resources:
       limits:
@@ -49,9 +48,6 @@ spec:
           cpu: 500m
           memory: 1Gi
       jvm: -Xms1g -Xmx1g
-      env:
-        - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
-          value: Admin123!
 ---
 # OpenSearch 관리자 자격 증명 Secret
 apiVersion: v1
