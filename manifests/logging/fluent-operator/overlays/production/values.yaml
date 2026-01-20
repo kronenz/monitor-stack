@@ -3,7 +3,7 @@
 # Fluent Bit DaemonSet 및 CRD 컨트롤러 설정
 
 operator:
-  # Operator 리소스 제한
+  disableComponentControllers: "fluentd"
   resources:
     limits:
       cpu: 100m
@@ -54,5 +54,5 @@ fluentbit:
     - operator: Exists
 
 fluentd:
-  # Fluentd 비활성화 (Fluent Bit만 사용)
+  crdsEnable: false
   enable: false
