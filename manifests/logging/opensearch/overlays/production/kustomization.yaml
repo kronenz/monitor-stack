@@ -8,6 +8,7 @@ namespace: logging
 resources:
   - ../../base
   - opensearch-cluster.yaml
+  - opensearch-dashboards-nodeport.yaml
 
 helmCharts:
   - name: opensearch-operator
