@@ -1,38 +1,23 @@
-# FluentBitConfig: Fluent Bit 파이프라인 전체 구성 바인딩
-# 이 CR이 ClusterInput/Filter/Output을 연결하여 파이프라인 구성
 apiVersion: fluentbit.fluent.io/v1alpha2
-kind: FluentBitConfig
+kind: ClusterFluentBitConfig
 metadata:
   name: fluent-bit-config
-  namespace: logging
   labels:
     app.kubernetes.io/name: fluent-bit
 spec:
-  # 서비스 설정
   service:
-    # Flush 간격 (초)
     flushSeconds: 5
-    # 로그 레벨
     logLevel: info
-    # 파서 파일 포함
     parsersFile: parsers.conf
-
-  # ClusterInput 선택자 (모든 ClusterInput 포함)
   inputSelector:
     matchLabels:
       fluentbit.fluent.io/enabled: "true"
-
-  # ClusterFilter 선택자
   filterSelector:
     matchLabels:
       fluentbit.fluent.io/enabled: "true"
-
-  # ClusterParser 선택자
   parserSelector:
     matchLabels:
       fluentbit.fluent.io/enabled: "true"
-
-  # ClusterOutput 선택자
   outputSelector:
     matchLabels:
       fluentbit.fluent.io/enabled: "true"
