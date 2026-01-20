@@ -33,7 +33,10 @@ data:
       
       sink:
         - opensearch:
-            hosts: ["http://opensearch.logging.svc.cluster.local:9200"]
+            hosts: ["https://opensearch.logging.svc.cluster.local:9200"]
+            username: admin
+            password: admin
+            insecure: true
             index: "k8s-logs-%{+yyyy.MM.dd}"
             bulk_size: 4
     
@@ -71,6 +74,9 @@ data:
       
       sink:
         - opensearch:
-            hosts: ["http://opensearch.logging.svc.cluster.local:9200"]
+            hosts: ["https://opensearch.logging.svc.cluster.local:9200"]
+            username: admin
+            password: admin
+            insecure: true
             index: "java-logs-%{+yyyy.MM.dd}"
             bulk_size: 4
